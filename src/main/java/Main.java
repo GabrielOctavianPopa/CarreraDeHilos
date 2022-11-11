@@ -7,12 +7,15 @@ public class Main extends javax.swing.JFrame implements Observer {
     private JButton btnIniciar, btnStop;
     private JLabel player1, player2, player3, jLabel5, lblGanador;
     private JProgressBar progressBar1, progressBar2, progressBar3;
-    private Thread[] hilos;
-    private JFrame frame;
+    private Thread[] hilos = new Thread[3];
+    private boolean stop = false;
 
     public Main() {
         initComponents();
-        hilos = new Thread[3];
+        hilos[0] = new Thread(new Jugador("Jugador 1"));
+        hilos[1] = new Thread(new Jugador("Jugador 2"));
+        hilos[2] = new Thread(new Jugador("Jugador 3"));
+
     }
 
     public static void main(String args[]) {
@@ -39,6 +42,7 @@ public class Main extends javax.swing.JFrame implements Observer {
                 this.progressBar3.setValue(porcentaje);
                 break;
         }
+
         if(porcentaje>=100){
             terminar();
             this.btnIniciar.setEnabled(true);
@@ -46,19 +50,37 @@ public class Main extends javax.swing.JFrame implements Observer {
         }
     }
 
+
+
     private void btnIniciarActionPerformed(java.awt.event.ActionEvent evt) {
         this.btnIniciar.setEnabled(false);
         for (int i = 0; i < hilos.length; i++) {
             Jugador auxJugador = new Jugador((i+1)+"");
             auxJugador.addObserver(this);
+            lblGanador.setText("");
+            btnStop.setText("Parar");
             hilos[i] = new Thread(auxJugador);
             hilos[i].start();
+
         }
     }
 
     private void btnStopActionPerformed(java.awt.event.ActionEvent evt) {
-        for (int i = 0; i < hilos.length; i++) {
-            hilos[i].stop();
+        String auxText = this.btnStop.getText();
+
+        switch (auxText) {
+            case "Parar":
+                this.btnStop.setText("Reanudar");
+                for (int i = 0; i < hilos.length; i++) {
+                    hilos[i].suspend();
+                }
+                break;
+            case "Reanudar":
+                this.btnStop.setText("Parar");
+                for (int i = 0; i < hilos.length; i++) {
+                    hilos[i].resume();
+                }
+                break;
         }
     }
 
@@ -80,7 +102,6 @@ public class Main extends javax.swing.JFrame implements Observer {
         player3 = new JLabel();
         jLabel5 = new JLabel();
         lblGanador = new JLabel();
-        frame = new JFrame("Carrera de caballos");
 
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);

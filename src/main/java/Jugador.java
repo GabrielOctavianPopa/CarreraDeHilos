@@ -1,6 +1,7 @@
 import java.util.Observable;
 public class Jugador extends Observable implements Runnable {
     private String nombre;
+    private boolean stop = false;
 
     @Override
     public void run() {
@@ -10,11 +11,16 @@ public class Jugador extends Observable implements Runnable {
 
         try {
             velocidad = generaNumeroAleatorio(5, 15);
-            while (porcentaje < 100) {
-
+            while (porcentaje < 100 && !stop) {
                 if(crashed == 10){
-                    if (generaNumeroAleatorio(1, 10) > 8) {
-                        porcentaje = 0;
+                    if (generaNumeroAleatorio(1, 10) > 6) {
+                        if(porcentaje >= 10){
+                            porcentaje = porcentaje - 10;
+                        }
+                        else {
+                            porcentaje = 0;
+                        }
+
                     }
                     crashed = 0;
                 }
