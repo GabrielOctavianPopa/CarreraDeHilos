@@ -1,88 +1,61 @@
-import java.util.Observable;
-import java.util.Observer;
 import javax.swing.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
-public class Main extends javax.swing.JFrame implements Observer {
+public class Main extends javax.swing.JFrame {
     //creacion de variables
     private JButton btnIniciar, btnStop;
     private JLabel player1, player2, player3, jLabel5, lblGanador;
     private JProgressBar progressBar1, progressBar2, progressBar3;
-    private Thread[] hilos = new Thread[3];
-    private boolean stop = false;
+    private HiloMonitorJugador thJugador1, thJugador2, thJugador3;
+    private HiloBarra thBarra1, thBarra2, thBarra3;
+    private HiloCronometro hiloCronometro;
+    private Thread[] hilos = new Thread[6];
 
     public Main() {
         initComponents();
-        hilos[0] = new Thread(new Jugador("Jugador 1"));
-        hilos[1] = new Thread(new Jugador("Jugador 2"));
-        hilos[2] = new Thread(new Jugador("Jugador 3"));
-
+        this.setVisible(true);
+        thJugador1 = new HiloMonitorJugador("Jugador 1");
+        thJugador2 = new HiloMonitorJugador("Jugador 2");
+        thJugador3 = new HiloMonitorJugador("Jugador 3");
+        thBarra1 = new HiloBarra(thJugador1, progressBar1, thJugador1.getPorcentaje());
+        thBarra2 = new HiloBarra(thJugador2, progressBar2, thJugador2.getPorcentaje());
+        thBarra3 = new HiloBarra(thJugador3, progressBar3, thJugador3.getPorcentaje());
+        hilos[0] = thJugador1;
+        hilos[1] = thJugador2;
+        hilos[2] = thJugador3;
+        hilos[3] = thBarra1;
+        hilos[4] = thBarra2;
+        hilos[5] = thBarra3;
     }
 
     public static void main(String args[]) {
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                new Main().setVisible(true);
-            }
-        });
+        new Main();
     }
 
-    @Override
-    public void update(Observable o, Object arg) {
-        Jugador c = (Jugador) o;
-        int porcentaje = (int) arg;
-
-        switch (c.getNombre()) {
-            case "1":
-                this.progressBar1.setValue(porcentaje);
-                break;
-            case "2":
-                this.progressBar2.setValue(porcentaje);
-                break;
-            case "3":
-                this.progressBar3.setValue(porcentaje);
-                break;
-        }
-
-        if(porcentaje>=100){
-            terminar();
-            this.btnIniciar.setEnabled(true);
-            this.lblGanador.setText("Jugador " + c.getNombre());
-        }
-    }
-
-
-
-    private void btnIniciarActionPerformed(java.awt.event.ActionEvent evt) {
-        this.btnIniciar.setEnabled(false);
-        for (int i = 0; i < hilos.length; i++) {
-            Jugador auxJugador = new Jugador((i+1)+"");
-            auxJugador.addObserver(this);
-            lblGanador.setText("");
-            btnStop.setText("Parar");
-            hilos[i] = new Thread(auxJugador);
-            hilos[i].start();
-
-        }
-    }
-
-    private void btnStopActionPerformed(java.awt.event.ActionEvent evt) {
-        String auxText = this.btnStop.getText();
-
-        switch (auxText) {
-            case "Parar":
-                this.btnStop.setText("Reanudar");
-                for (int i = 0; i < hilos.length; i++) {
-                    hilos[i].suspend();
-                }
-                break;
-            case "Reanudar":
-                this.btnStop.setText("Parar");
-                for (int i = 0; i < hilos.length; i++) {
-                    hilos[i].resume();
-                }
-                break;
-        }
-    }
+//    @Override
+//    public void update(Observable o, Object arg) {
+//        Jugador c = (Jugador) o;
+//        int porcentaje = (int) arg;
+//
+//        switch (c.getNombre()) {
+//            case "1":
+//                this.progressBar1.setValue(porcentaje);
+//                break;
+//            case "2":
+//                this.progressBar2.setValue(porcentaje);
+//                break;
+//            case "3":
+//                this.progressBar3.setValue(porcentaje);
+//                break;
+//        }
+//
+//        if(porcentaje>=100){
+//            terminar();
+//            this.btnIniciar.setEnabled(true);
+//            this.lblGanador.setText("Jugador " + c.getNombre());
+//        }
+//    }
 
     private void terminar(){
         for (int i = 0; i < hilos.length; i++) {
@@ -106,16 +79,43 @@ public class Main extends javax.swing.JFrame implements Observer {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         btnIniciar.setText("Iniciar");
-        btnIniciar.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnIniciarActionPerformed(evt);
+        btnIniciar.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                hiloCronometro = new HiloCronometro();
+                hiloCronometro.start();
+                btnIniciar.setEnabled(false);
+
+                for (int i = 0; i < hilos.length; i++) {
+                    lblGanador.setText("");
+                    btnStop.setText("Parar");
+                    hilos[i].start();
+                }
             }
         });
 
         btnStop.setText("Parar");
-        btnStop.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnStopActionPerformed(evt);
+        btnStop.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                String auxText = btnStop.getText();
+
+                switch (auxText) {
+                    case "Parar":
+                        btnStop.setText("Reanudar");
+                        for (int i = 0; i < hilos.length; i++) {
+                            hilos[i].suspend();
+                        }
+                        hiloCronometro.suspend();
+                        break;
+                    case "Reanudar":
+                        btnStop.setText("Parar");
+                        for (int i = 0; i < hilos.length; i++) {
+                            hilos[i].resume();
+                        }
+                        hiloCronometro.resume();
+                        break;
+                }
             }
         });
 
