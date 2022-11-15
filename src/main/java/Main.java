@@ -33,36 +33,6 @@ public class Main extends javax.swing.JFrame {
         new Main();
     }
 
-//    @Override
-//    public void update(Observable o, Object arg) {
-//        Jugador c = (Jugador) o;
-//        int porcentaje = (int) arg;
-//
-//        switch (c.getNombre()) {
-//            case "1":
-//                this.progressBar1.setValue(porcentaje);
-//                break;
-//            case "2":
-//                this.progressBar2.setValue(porcentaje);
-//                break;
-//            case "3":
-//                this.progressBar3.setValue(porcentaje);
-//                break;
-//        }
-//
-//        if(porcentaje>=100){
-//            terminar();
-//            this.btnIniciar.setEnabled(true);
-//            this.lblGanador.setText("Jugador " + c.getNombre());
-//        }
-//    }
-
-    private void terminar(){
-        for (int i = 0; i < hilos.length; i++) {
-            hilos[i].interrupt();
-        }
-    }
-
     @SuppressWarnings("unchecked")
     private void initComponents() {
         btnIniciar = new JButton();
